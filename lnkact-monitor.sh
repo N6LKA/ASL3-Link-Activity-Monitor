@@ -183,9 +183,9 @@ in_blackout() {
     start="$BLACKOUT_START"
     end="$BLACKOUT_END"
     if [[ "$start" < "$end" ]]; then
-        [[ "$now_hhmm" >= "$start" && "$now_hhmm" < "$end" ]] && return 0
+        [[ "$now_hhmm" > "$start" || "$now_hhmm" == "$start" ]] && [[ "$now_hhmm" < "$end" ]] && return 0
     else
-        [[ "$now_hhmm" >= "$start" || "$now_hhmm" < "$end" ]] && return 0
+        [[ "$now_hhmm" > "$start" || "$now_hhmm" == "$start" || "$now_hhmm" < "$end" ]] && return 0
     fi
     return 1
 }

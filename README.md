@@ -34,7 +34,7 @@ When your repeater node has been inactive (no local RF activity or new node conn
 Run this single command as root:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/N6LKA/asl3-link-activity-monitor/main/install.sh | bash
+bash <(curl -fsSL https://raw.githubusercontent.com/N6LKA/asl3-link-activity-monitor/main/install.sh)
 ```
 
 The installer will:
