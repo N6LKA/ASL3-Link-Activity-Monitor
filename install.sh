@@ -1,0 +1,233 @@
+#!/bin/bash
+# =============================================================================
+# install.sh - Installer for ASL3 Link Activity Monitor
+# https://github.com/N6LKA/asl3-link-activity-monitor
+# =============================================================================
+
+SCRIPT_DIR="/etc/asterisk/scripts"
+SCRIPT_FILE="$SCRIPT_DIR/lnkact-monitor.sh"
+CONF_FILE="$SCRIPT_DIR/lnkact-monitor.conf"
+SERVICE_FILE="/etc/systemd/system/lnkact-monitor.service"
+REPO="https://raw.githubusercontent.com/N6LKA/asl3-link-activity-monitor/main"
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+echo ""
+echo "=============================================="
+echo "  ASL3 Link Activity Monitor - Installer"
+echo "  https://github.com/N6LKA/asl3-link-activity-monitor"
+echo "=============================================="
+echo ""
+
+# --- Must run as root ---
+if [[ $EUID -ne 0 ]]; then
+    echo -e "${RED}ERROR: This installer must be run as root.${NC}"
+    exit 1
+fi
+
+# --- Check for existing install ---
+if [[ -f "$CONF_FILE" ]]; then
+    echo -e "${YELLOW}WARNING: An existing configuration file was found at:${NC}"
+    echo "  $CONF_FILE"
+    echo ""
+    echo "Running this installer will overwrite the SCRIPT only."
+    echo "Your existing configuration file will NOT be changed."
+    read -rp "Continue? (y/n): " confirm
+    [[ "$confirm" != "y" && "$confirm" != "Y" ]] && echo "Aborted." && exit 0
+    PRESERVE_CONF=true
+else
+    PRESERVE_CONF=false
+fi
+
+echo ""
+echo "--- Downloading files ---"
+
+# --- Create script directory ---
+mkdir -p "$SCRIPT_DIR"
+
+# --- Download main script ---
+echo "Downloading lnkact-monitor.sh..."
+curl -fsSL "$REPO/lnkact-monitor.sh" -o "$SCRIPT_FILE"
+if [[ $? -ne 0 ]]; then
+    echo -e "${RED}ERROR: Failed to download lnkact-monitor.sh${NC}"
+    exit 1
+fi
+chmod +x "$SCRIPT_FILE"
+
+# --- Download service file ---
+echo "Downloading lnkact-monitor.service..."
+curl -fsSL "$REPO/lnkact-monitor.service" -o "$SERVICE_FILE"
+if [[ $? -ne 0 ]]; then
+    echo -e "${RED}ERROR: Failed to download lnkact-monitor.service${NC}"
+    exit 1
+fi
+
+echo ""
+
+# --- Create conf file if it doesn't exist ---
+if [[ "$PRESERVE_CONF" == "false" ]]; then
+    echo "--- Configuration Setup ---"
+    echo "Please answer the following questions to configure the monitor."
+    echo "You can change any of these later by editing: $CONF_FILE"
+    echo ""
+
+    # Node number (required)
+    while true; do
+        read -rp "Enter your ASL3 node number: " NODE
+        NODE=$(echo "$NODE" | tr -d ' ')
+        if [[ -n "$NODE" ]]; then
+            break
+        fi
+        echo -e "${RED}Node number is required.${NC}"
+    done
+
+    # Permanent nodes
+    read -rp "Enter permanent/hub node(s) to stay connected [leave blank if none]: " PERMANENT_NODES
+
+    # Reconnect nodes
+    read -rp "Enter node(s) to reconnect to after reset [leave blank if none]: " RECONNECT_NODES
+
+    # Inactivity timeout
+    read -rp "Inactivity timeout in seconds [default: 3600 = 60 min]: " INACT_TIMEOUT
+    INACT_TIMEOUT=${INACT_TIMEOUT:-3600}
+
+    # Connection log
+    read -rp "Path to connection log file [default: /var/log/asterisk/connectlog, blank to disable]: " CONNECT_LOG
+    CONNECT_LOG=${CONNECT_LOG:-/var/log/asterisk/connectlog}
+
+    echo ""
+    echo "--- Writing configuration file ---"
+
+    cat > "$CONF_FILE" << EOF
+# =============================================================================
+# lnkact-monitor.conf - Configuration for ASL3 Link Activity Monitor
+#
+# After making changes, restart the service:
+#   systemctl restart lnkact-monitor
+#
+# For connection logging setup, see:
+#   https://github.com/N6LKA/asl3-connection-log
+#
+# Full documentation:
+#   https://github.com/N6LKA/asl3-link-activity-monitor
+# =============================================================================
+
+# --- Node ---
+# Node number to monitor (required)
+NODE="$NODE"
+
+# --- Inactivity Timer ---
+# Seconds of RF inactivity before reset (3600 = 60 min)
+INACT_TIMEOUT=$INACT_TIMEOUT
+
+# How often to check activity in seconds
+POLL_INTERVAL=2
+
+# --- Warning ---
+# Warning mode: "tts" = text-to-speech, "file" = pre-recorded audio, "none" = silent
+WARN_MODE="tts"
+
+# Path to pre-recorded warning file (no extension) - used if WARN_MODE=file
+WARN_AUDIO="/etc/asterisk/local/30seconds-reset"
+
+# TTS warning text - used if WARN_MODE=tts
+WARN_TTS_TEXT="Warning! Node connections will reset in 30 seconds."
+
+# Seconds before reset to play warning
+WARN_LEAD=30
+
+# Extra seconds offset for file playback timing
+WARN_OFFSET_FILE=7
+
+# Extra seconds offset for TTS processing + playback timing
+WARN_OFFSET_TTS=7
+
+# --- Connection Log ---
+# ASL3 does NOT have a native connection log. See:
+#   https://github.com/N6LKA/asl3-connection-log
+# Leave blank to disable connection log monitoring.
+CONNECT_LOG="$CONNECT_LOG"
+
+# Minimum connection duration in seconds before resetting timer
+# Set to 0 to reset timer on any connection regardless of duration
+MIN_CONN_DURATION=60
+
+# --- Permanent / Always-Connected Nodes ---
+# Space-separated list of nodes that are always connected.
+# Reset is skipped if ONLY these nodes are connected.
+# Leave blank to always reset regardless of connected nodes.
+PERMANENT_NODES="$PERMANENT_NODES"
+
+# --- Blackout Window ---
+# During the blackout window, resets and warnings are suppressed entirely.
+# Uses 24-hour format (HH:MM). Leave both blank to disable.
+# Example: BLACKOUT_START="19:00" BLACKOUT_END="21:00"
+BLACKOUT_START=""
+BLACKOUT_END=""
+
+# --- Scheduled Resets ---
+# Space-separated list of HH:MM (24-hour) times to force a reset daily.
+# Warning plays before each scheduled reset. Leave blank to disable.
+# Example: SCHEDULED_RESETS="06:00 16:00"
+SCHEDULED_RESETS=""
+
+# --- Reset Actions ---
+# Wrap reset in telemetry off/on (cop 34/35): yes or no
+USE_TELEMETRY="yes"
+
+# Disconnect all nodes before reconnecting: yes or no
+DISCONNECT_ALL="yes"
+
+# Space-separated list of nodes to reconnect after reset.
+# Leave blank to not reconnect to any node after reset.
+RECONNECT_NODES="$RECONNECT_NODES"
+
+# Play TTS announcement after reset: yes or no
+ANNOUNCE="yes"
+
+# TTS text spoken after reset completes
+ANNOUNCE_TEXT="Connection Reset"
+EOF
+
+    echo -e "${GREEN}Configuration file created: $CONF_FILE${NC}"
+fi
+
+# --- Enable and start service ---
+echo ""
+echo "--- Enabling and starting service ---"
+systemctl daemon-reload
+systemctl enable lnkact-monitor > /dev/null 2>&1
+systemctl restart lnkact-monitor
+
+sleep 2
+if systemctl is-active --quiet lnkact-monitor; then
+    echo -e "${GREEN}Service is running successfully.${NC}"
+else
+    echo -e "${RED}WARNING: Service did not start. Check logs with:${NC}"
+    echo "  journalctl -u lnkact-monitor -f"
+fi
+
+echo ""
+echo "=============================================="
+echo -e "${GREEN}Installation complete!${NC}"
+echo ""
+echo "Configuration file: $CONF_FILE"
+echo "Script file:        $SCRIPT_FILE"
+echo ""
+echo "Edit the conf file to configure optional features:"
+echo "  - Blackout windows"
+echo "  - Scheduled resets"
+echo "  - Warning mode (tts/file/none)"
+echo "  - Minimum connection duration"
+echo "  - And more..."
+echo ""
+echo "Service commands:"
+echo "  systemctl start lnkact-monitor"
+echo "  systemctl stop lnkact-monitor"
+echo "  systemctl restart lnkact-monitor"
+echo "  journalctl -u lnkact-monitor -f"
+echo "=============================================="
+echo ""

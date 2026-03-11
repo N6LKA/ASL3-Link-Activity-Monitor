@@ -1,0 +1,98 @@
+# =============================================================================
+# lnkact-monitor.conf - Configuration for ASL3 Link Activity Monitor
+#
+# IMPORTANT: This is an example file. The actual configuration file is
+# created at /etc/asterisk/scripts/lnkact-monitor.conf by the installer.
+#
+# After making changes to your conf file, restart the service:
+#   systemctl restart lnkact-monitor
+#
+# For connection logging setup, see:
+#   https://github.com/N6LKA/asl3-connection-log
+#
+# Full documentation:
+#   https://github.com/N6LKA/asl3-link-activity-monitor
+# =============================================================================
+
+# --- Node ---
+# Your ASL3 node number (required)
+NODE="501260"
+
+# --- Inactivity Timer ---
+# Seconds of RF inactivity before reset (3600 = 60 min)
+INACT_TIMEOUT=3600
+
+# How often to check activity in seconds
+POLL_INTERVAL=2
+
+# --- Warning ---
+# Warning mode: "tts" = text-to-speech, "file" = pre-recorded audio, "none" = silent
+WARN_MODE="tts"
+
+# Path to pre-recorded warning file (no extension) - used if WARN_MODE=file
+WARN_AUDIO="/etc/asterisk/local/30seconds-reset"
+
+# TTS warning text - used if WARN_MODE=tts
+WARN_TTS_TEXT="Warning! Node connections will reset in 30 seconds."
+
+# Seconds before reset to play warning
+WARN_LEAD=30
+
+# Extra seconds offset for file playback timing
+WARN_OFFSET_FILE=7
+
+# Extra seconds offset for TTS processing + playback timing
+WARN_OFFSET_TTS=7
+
+# --- Connection Log ---
+# ASL3 does NOT have a native connection log. See:
+#   https://github.com/N6LKA/asl3-connection-log
+# Leave blank to disable connection log monitoring.
+CONNECT_LOG="/var/log/asterisk/connectlog"
+
+# Minimum connection duration in seconds before resetting timer.
+# Ignores very brief link tests or drive-bys.
+# Set to 0 to reset timer on any connection regardless of duration.
+MIN_CONN_DURATION=60
+
+# --- Permanent / Always-Connected Nodes ---
+# Space-separated list of nodes that are always connected.
+# Reset is skipped if ONLY these nodes are connected.
+# Leave blank to always reset regardless of connected nodes.
+# Example: PERMANENT_NODES="501265 501261"
+PERMANENT_NODES="501265"
+
+# --- Blackout Window ---
+# During the blackout window, resets and warnings are suppressed entirely.
+# Uses 24-hour format (HH:MM). Leave both blank to disable.
+# Midnight-spanning windows are supported (e.g. 22:00 to 06:00).
+# Example: BLACKOUT_START="19:00" BLACKOUT_END="21:00" suppresses resets 7-9 PM
+BLACKOUT_START=""
+BLACKOUT_END=""
+
+# --- Scheduled Resets ---
+# Space-separated list of HH:MM (24-hour) times to force a reset daily.
+# Warning plays before each scheduled reset.
+# Scheduled resets always fire regardless of activity or connected nodes.
+# Leave blank to disable.
+# Example: SCHEDULED_RESETS="06:00 16:00" resets at 6 AM and 4 PM daily
+SCHEDULED_RESETS=""
+
+# --- Reset Actions ---
+# Wrap reset in telemetry off/on (cop 34/35): yes or no
+USE_TELEMETRY="yes"
+
+# Disconnect all nodes before reconnecting: yes or no
+DISCONNECT_ALL="yes"
+
+# Space-separated list of nodes to reconnect after reset.
+# Each node is connected using *73 (permanent connection).
+# Leave blank to not reconnect to any node after reset.
+# Example: RECONNECT_NODES="501265 501261"
+RECONNECT_NODES="501265"
+
+# Play TTS announcement after reset: yes or no
+ANNOUNCE="yes"
+
+# TTS text spoken after reset completes
+ANNOUNCE_TEXT="Connection Reset"
