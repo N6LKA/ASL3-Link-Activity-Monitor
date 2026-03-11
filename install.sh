@@ -30,14 +30,23 @@ fi
 
 # --- Check for existing install ---
 if [[ -f "$CONF_FILE" ]]; then
-    echo -e "${YELLOW}WARNING: An existing configuration file was found at:${NC}"
-    echo "  $CONF_FILE"
+    echo -e "${YELLOW}Existing installation detected.${NC}"
+    echo "This will update the script only. Your configuration file will NOT be changed."
     echo ""
-    echo "Running this installer will overwrite the SCRIPT only."
-    echo "Your existing configuration file will NOT be changed."
-    read -rp "Continue? (y/n): " confirm
+    read -rp "Continue with update? (y/n): " confirm
     [[ "$confirm" != "y" && "$confirm" != "Y" ]] && echo "Aborted." && exit 0
     PRESERVE_CONF=true
+
+    # Stop service before update
+    echo "Stopping service..."
+    systemctl stop lnkact-monitor
+
+    # Backup existing script
+    if [[ -f "$SCRIPT_FILE" ]]; then
+        BACKUP="$SCRIPT_FILE.bak.$(date +%Y%m%d%H%M%S)"
+        cp "$SCRIPT_FILE" "$BACKUP"
+        echo "Backup created: $BACKUP"
+    fi
 else
     PRESERVE_CONF=false
 fi
@@ -53,6 +62,11 @@ echo "Downloading lnkact-monitor.sh..."
 curl -fsSL "$REPO/lnkact-monitor.sh" -o "$SCRIPT_FILE"
 if [[ $? -ne 0 ]]; then
     echo -e "${RED}ERROR: Failed to download lnkact-monitor.sh${NC}"
+    if [[ -n "$BACKUP" && -f "$BACKUP" ]]; then
+        echo "Restoring backup..."
+        cp "$BACKUP" "$SCRIPT_FILE"
+        systemctl start lnkact-monitor
+    fi
     exit 1
 fi
 chmod +x "$SCRIPT_FILE"
@@ -205,24 +219,44 @@ systemctl restart lnkact-monitor
 sleep 2
 if systemctl is-active --quiet lnkact-monitor; then
     echo -e "${GREEN}Service is running successfully.${NC}"
+    # Clean up backup on success
+    [[ -n "$BACKUP" && -f "$BACKUP" ]] && rm -f "$BACKUP"
 else
-    echo -e "${RED}WARNING: Service did not start. Check logs with:${NC}"
+    echo -e "${RED}WARNING: Service did not start.${NC}"
+    if [[ -n "$BACKUP" && -f "$BACKUP" ]]; then
+        echo "Restoring previous version..."
+        cp "$BACKUP" "$SCRIPT_FILE"
+        systemctl start lnkact-monitor
+        echo "Previous version restored. Check logs with:"
+    else
+        echo "Check logs with:"
+    fi
     echo "  journalctl -u lnkact-monitor -f"
 fi
 
 echo ""
 echo "=============================================="
-echo -e "${GREEN}Installation complete!${NC}"
+if [[ "$PRESERVE_CONF" == "true" ]]; then
+    echo -e "${GREEN}Update complete!${NC}"
+    echo ""
+    echo "Your configuration file was not modified."
+    echo "If new options were added, they will be appended"
+    echo "to your conf file automatically on next start."
+    echo "Check for new options with:"
+    echo "  journalctl -u lnkact-monitor | grep 'NEW config'"
+else
+    echo -e "${GREEN}Installation complete!${NC}"
+    echo ""
+    echo "Edit the conf file to configure optional features:"
+    echo "  - Blackout windows"
+    echo "  - Scheduled resets"
+    echo "  - Warning mode (tts/file/none)"
+    echo "  - Minimum connection duration"
+    echo "  - And more..."
+fi
 echo ""
 echo "Configuration file: $CONF_FILE"
 echo "Script file:        $SCRIPT_FILE"
-echo ""
-echo "Edit the conf file to configure optional features:"
-echo "  - Blackout windows"
-echo "  - Scheduled resets"
-echo "  - Warning mode (tts/file/none)"
-echo "  - Minimum connection duration"
-echo "  - And more..."
 echo ""
 echo "Service commands:"
 echo "  systemctl start lnkact-monitor"

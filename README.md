@@ -55,13 +55,20 @@ If you skip this, set `CONNECT_LOG=""` in the conf file. The monitor will still 
 
 ## Updating
 
-To update the script while keeping your configuration intact:
+To update, simply re-run the install command:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/N6LKA/asl3-link-activity-monitor/main/update.sh | bash
+bash <(curl -fsSL https://raw.githubusercontent.com/N6LKA/asl3-link-activity-monitor/main/install.sh)
 ```
 
-Your `lnkact-monitor.conf` file is **never modified** by the updater. If an update adds new configuration variables, they will be automatically appended to your conf file with default values on the next service start and logged so you can review them.
+When an existing installation is detected, the installer will:
+- Stop the service
+- Back up the existing script
+- Download the latest version
+- Restart the service
+- Automatically restore the backup if the service fails to start
+
+Your `lnkact-monitor.conf` file is **never modified** by an update. If an update adds new configuration variables, they will be automatically appended to your conf file with default values on the next service start.
 
 ## Configuration
 
