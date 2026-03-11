@@ -29,19 +29,17 @@ When your repeater node has been inactive (no local RF activity or new node conn
 - `asl-tts` (included with ASL3) if using TTS warning mode
 - Connection logging (optional but recommended) — see [asl3-connection-log](https://github.com/N6LKA/asl3-connection-log)
 
-## Installation
+## Installation & Updates
 
-Run this single command as root:
+Run this single command as root for both fresh installs and updates:
 
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/N6LKA/asl3-link-activity-monitor/main/install.sh)
 ```
 
-The installer will:
-1. Download the script and service file
-2. Prompt you for your node number and basic settings
-3. Create `/etc/asterisk/scripts/lnkact-monitor.conf` with your settings
-4. Enable and start the systemd service
+**Fresh install:** The installer will prompt you for your node number and basic settings, create the configuration file, and start the service.
+
+**Existing install detected:** The installer will stop the service, back up the existing script, download the latest version, and restart. Your `lnkact-monitor.conf` is never modified. If an update adds new configuration variables, they will be automatically appended to your conf file with default values on the next service start.
 
 > **Tip:** For initial testing, set `INACT_TIMEOUT=180` in the conf file so you can verify the warning and reset fire within a few minutes, then change it back to your desired value.
 
@@ -52,23 +50,6 @@ ASL3 does not have a native connection log. To enable connection-based timer res
 👉 [https://github.com/N6LKA/asl3-connection-log](https://github.com/N6LKA/asl3-connection-log)
 
 If you skip this, set `CONNECT_LOG=""` in the conf file. The monitor will still work using RF activity (kerchunk counter) only.
-
-## Updating
-
-To update, simply re-run the install command:
-
-```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/N6LKA/asl3-link-activity-monitor/main/install.sh)
-```
-
-When an existing installation is detected, the installer will:
-- Stop the service
-- Back up the existing script
-- Download the latest version
-- Restart the service
-- Automatically restore the backup if the service fails to start
-
-Your `lnkact-monitor.conf` file is **never modified** by an update. If an update adds new configuration variables, they will be automatically appended to your conf file with default values on the next service start.
 
 ## Configuration
 
