@@ -62,7 +62,6 @@ DEFAULT_WARN_LEAD=30
 DEFAULT_WARN_OFFSET_FILE=7
 DEFAULT_WARN_OFFSET_TTS=7
 DEFAULT_CONNECT_LOG="/var/log/asterisk/connectlog"
-DEFAULT_MIN_CONN_DURATION=60
 DEFAULT_PERMANENT_NODES=""
 DEFAULT_BLACKOUT_START=""
 DEFAULT_BLACKOUT_END=""
@@ -118,7 +117,6 @@ check_conf_vars() {
     append_var "WARN_OFFSET_FILE"  "$DEFAULT_WARN_OFFSET_FILE"  "Extra seconds offset for file playback timing"
     append_var "WARN_OFFSET_TTS"   "$DEFAULT_WARN_OFFSET_TTS"   "Extra seconds offset for TTS processing + playback timing"
     append_var "CONNECT_LOG"       "$DEFAULT_CONNECT_LOG"       "Path to connection log file - leave blank to disable"
-    append_var "MIN_CONN_DURATION" "$DEFAULT_MIN_CONN_DURATION" "Minimum connection duration in seconds before resetting timer (0 = disable)"
     append_var "PERMANENT_NODES"   "$DEFAULT_PERMANENT_NODES"   "Space-separated list of always-connected nodes - reset skipped if only these are linked"
     append_var "BLACKOUT_START"    "$DEFAULT_BLACKOUT_START"    "Blackout window start time HH:MM 24hr - leave blank to disable"
     append_var "BLACKOUT_END"      "$DEFAULT_BLACKOUT_END"      "Blackout window end time HH:MM 24hr"
@@ -428,34 +426,14 @@ while true; do
 
         if [[ "$cur_connect_lines" -gt "$last_connect_lines" ]]; then
             new_conn=$(grep " connected to $NODE\|^$NODE connected " "$CONNECT_LOG" 2>/dev/null | tail -1)
-
-            conn_qualifies=true
-            if [[ "$MIN_CONN_DURATION" -gt 0 ]]; then
-                conn_time=$(echo "$new_conn" | grep -oP '\d{2}:\d{2}:\d{2} - \d{2}-\d{2}-\d{4}')
-                if [[ -n "$conn_time" ]]; then
-                    conn_epoch=$(date -d "$(echo "$conn_time" | sed 's/ - / /' | sed 's/\([0-9]\{2\}\)-\([0-9]\{2\}\)-\([0-9]\{4\}\)/\3-\1-\2/')" +%s 2>/dev/null)
-                    if [[ -n "$conn_epoch" ]]; then
-                        conn_age=$(( now - conn_epoch ))
-                        if [[ "$conn_age" -lt "$MIN_CONN_DURATION" ]]; then
-                            conn_qualifies=false
-                        fi
-                    fi
-                fi
-            fi
-
             last_connect_lines=$cur_connect_lines
-
-            if [[ "$conn_qualifies" == "true" ]]; then
-                if [[ "$elapsed" -gt 30 ]]; then
-                    log "New connection detected: $new_conn - resetting inactivity timer (was ${elapsed}s)"
-                fi
-                last_activity=$now
-                warning_sent=false
-                sleep "$POLL_INTERVAL"
-                continue
-            else
-                log "New connection detected but under MIN_CONN_DURATION (${MIN_CONN_DURATION}s) - not resetting timer"
+            if [[ "$elapsed" -gt 30 ]]; then
+                log "New connection detected: $new_conn - resetting inactivity timer (was ${elapsed}s)"
             fi
+            last_activity=$now
+            warning_sent=false
+            sleep "$POLL_INTERVAL"
+            continue
         fi
         last_connect_lines=$cur_connect_lines
     fi

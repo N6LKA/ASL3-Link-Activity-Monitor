@@ -73,7 +73,6 @@ systemctl restart lnkact-monitor
 | `WARN_OFFSET_TTS` | `7` | Extra seconds for TTS processing time |
 | `WARN_OFFSET_FILE` | `7` | Extra seconds for file playback time |
 | `CONNECT_LOG` | `/var/log/asterisk/connectlog` | Path to connection log, or blank to disable |
-| `MIN_CONN_DURATION` | `60` | Min seconds a connection must exist to reset timer (0 = any) |
 | `PERMANENT_NODES` | *(blank)* | Space-separated hub/permanent nodes — reset skipped if only these connected |
 | `BLACKOUT_START` | *(blank)* | Blackout window start `HH:MM` 24hr — resets suppressed |
 | `BLACKOUT_END` | *(blank)* | Blackout window end `HH:MM` 24hr |

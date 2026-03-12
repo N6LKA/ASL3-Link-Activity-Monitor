@@ -53,7 +53,6 @@ CONNECT_LOG="/var/log/asterisk/connectlog"
 # Minimum connection duration in seconds before resetting timer.
 # Ignores very brief link tests or drive-bys.
 # Set to 0 to reset timer on any connection regardless of duration.
-MIN_CONN_DURATION=60
 
 # --- Permanent / Always-Connected Nodes ---
 # Space-separated list of nodes that are always connected.
