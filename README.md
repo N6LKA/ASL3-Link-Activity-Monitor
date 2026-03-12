@@ -17,7 +17,6 @@ When your repeater node has been inactive (no local RF activity or new node conn
 - Scheduled blackout windows (suppress resets during nets, etc.)
 - Scheduled forced resets at configured times of day
 - Reconnect to multiple nodes after reset
-- Minimum connection duration filter (ignores brief link tests)
 - Daily reset counter logged
 - Asterisk availability check before each cycle
 - Connection log rotation detection
@@ -50,6 +49,12 @@ ASL3 does not have a native connection log. To enable connection-based timer res
 👉 [https://github.com/N6LKA/asl3-connection-log](https://github.com/N6LKA/asl3-connection-log)
 
 If you skip this, set `CONNECT_LOG=""` in the conf file. The monitor will still work using RF activity (kerchunk counter) only.
+
+> **Important:** The connection log file must be owned by the `asterisk` user or the logging scripts will not be able to write to it. If you ever recreate or replace the file manually (e.g. during log rotation testing), restore ownership with:
+> ```bash
+> chown asterisk:asterisk /var/log/asterisk/connectlog
+> chmod 644 /var/log/asterisk/connectlog
+> ```
 
 ## Configuration
 
