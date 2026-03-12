@@ -1,10 +1,10 @@
 # ASL3 Link Activity Monitor
 
-A systemd-based link activity monitor for ASL3 (AllStarLink 3) that replaces the broken native `lnkactenable`/`lnkactmacro` functionality in ASL3 3.7.1+.
+A systemd-based link activity monitor for ASL3 (AllStarLink 3) nodes with configurable inactivity timeouts, blackout windows, scheduled resets, and more.
 
 ## What It Does
 
-When your repeater node has been inactive (no local RF activity or new node connections) for a configurable period, the monitor plays a warning announcement and then resets the node — disconnecting any linked nodes and reconnecting to your configured permanent hub(s).
+When your repeater node has been inactive (no local RF activity or new node connections) for a configurable period, the monitor plays a warning announcement and then resets the node — disconnecting any linked nodes and reconnecting to your configured nodes. It provides the same core functionality as the native `lnkactenable`/`lnkactmacro` timer built into ASL3, but with significantly more control over when and how resets occur.
 
 **Activity that resets the inactivity timer:**
 - Local RF activity (kerchunks) detected on your node
@@ -30,7 +30,7 @@ When your repeater node has been inactive (no local RF activity or new node conn
 
 ## Installation & Updates
 
-Run this single command as root for both fresh installs and updates:
+Run the following command as root or with sudo for both fresh installs and updates:
 
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/N6LKA/asl3-link-activity-monitor/main/install.sh)
@@ -127,9 +127,13 @@ journalctl -u lnkact-monitor -f
 | `lnkact-monitor.conf` | `/etc/asterisk/scripts/` | User configuration |
 | `lnkact-monitor.service` | `/etc/systemd/system/` | Systemd service definition |
 
+## How It Works
+
+The monitor polls every few seconds checking for two types of activity: local RF kerchunks via `rpt stats` (which only increments on local RF, not linked node audio), and new entries in the connection log. It uses `RPT_ALINKS`/`RPT_NUMALINKS` rather than `RPT_LINKS` to get an accurate count of directly connected nodes — this avoids false triggers from nodes that appear connected through an intermediary node but are not directly linked, which would otherwise prevent the reset from ever firing.
+
 ## Background
 
-The native `lnkactenable`/`lnkactmacro` timer in ASL3 3.7.1 is broken — the timer never fires. This monitor was written as a full replacement, using the kerchunk counter from `rpt stats` for local RF detection (which only increments on local RF activity, not linked node audio) and direct link variables (`RPT_ALINKS`/`RPT_NUMALINKS`) to avoid false triggers from hub-propagated phantom nodes.
+This monitor was originally written after the native `lnkactenable`/`lnkactmacro` timer stopped working on one particular ASL3 node — though the native function works fine on other nodes and setups, so your mileage may vary. What started as a workaround quickly grew into a more feature-rich replacement, adding blackout windows, scheduled resets, multi-node reconnect, and more. Even if your native timer is working, this monitor may be worth considering if you want more control over when and how resets happen.
 
 ## Author
 
