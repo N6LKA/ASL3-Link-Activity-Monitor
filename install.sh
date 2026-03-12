@@ -4,10 +4,12 @@
 # https://github.com/N6LKA/asl3-link-activity-monitor
 # =============================================================================
 
-SCRIPT_DIR="/etc/asterisk/scripts"
-SCRIPT_FILE="$SCRIPT_DIR/lnkact-monitor.sh"
-CONF_FILE="$SCRIPT_DIR/lnkact-monitor.conf"
+INSTALL_DIR="/etc/asterisk/scripts/lnkact-monitor"
+SCRIPT_FILE="$INSTALL_DIR/lnkact-monitor.sh"
+CONTROL_FILE="$INSTALL_DIR/lnkact.sh"
+CONF_FILE="$INSTALL_DIR/lnkact-monitor.conf"
 SERVICE_FILE="/etc/systemd/system/lnkact-monitor.service"
+SYMLINK="/usr/local/bin/lnkact"
 REPO="https://raw.githubusercontent.com/N6LKA/asl3-link-activity-monitor/main"
 
 RED='\033[0;31m'
@@ -22,26 +24,23 @@ echo "  https://github.com/N6LKA/asl3-link-activity-monitor"
 echo "=============================================="
 echo ""
 
-# --- Must run as root ---
 if [[ $EUID -ne 0 ]]; then
-    echo -e "${RED}ERROR: This installer must be run as root.${NC}"
+    echo -e "${RED}ERROR: This installer must be run as root or with sudo.${NC}"
     exit 1
 fi
 
 # --- Check for existing install ---
 if [[ -f "$CONF_FILE" ]]; then
     echo -e "${YELLOW}Existing installation detected.${NC}"
-    echo "This will update the script only. Your configuration file will NOT be changed."
+    echo "This will update the scripts only. Your configuration file will NOT be changed."
     echo ""
     read -rp "Continue with update? (y/n): " confirm
     [[ "$confirm" != "y" && "$confirm" != "Y" ]] && echo "Aborted." && exit 0
     PRESERVE_CONF=true
 
-    # Stop service before update
     echo "Stopping service..."
     systemctl stop lnkact-monitor
 
-    # Backup existing script
     if [[ -f "$SCRIPT_FILE" ]]; then
         BACKUP="$SCRIPT_FILE.bak.$(date +%Y%m%d%H%M%S)"
         cp "$SCRIPT_FILE" "$BACKUP"
@@ -54,8 +53,10 @@ fi
 echo ""
 echo "--- Downloading files ---"
 
-# --- Create script directory ---
-mkdir -p "$SCRIPT_DIR"
+# --- Create install directory with correct permissions ---
+mkdir -p "$INSTALL_DIR"
+chown root:asterisk "$INSTALL_DIR"
+chmod 775 "$INSTALL_DIR"
 
 # --- Download main script ---
 echo "Downloading lnkact-monitor.sh..."
@@ -70,6 +71,19 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 chmod +x "$SCRIPT_FILE"
+
+# --- Download control script ---
+echo "Downloading lnkact.sh..."
+curl -fsSL "$REPO/lnkact.sh" -o "$CONTROL_FILE"
+if [[ $? -ne 0 ]]; then
+    echo -e "${RED}ERROR: Failed to download lnkact.sh${NC}"
+    exit 1
+fi
+chmod +x "$CONTROL_FILE"
+
+# --- Create symlink for lnkact command ---
+ln -sf "$CONTROL_FILE" "$SYMLINK"
+echo "Control command available: lnkact enable|disable|status"
 
 # --- Download service file ---
 echo "Downloading lnkact-monitor.service..."
@@ -88,27 +102,17 @@ if [[ "$PRESERVE_CONF" == "false" ]]; then
     echo "You can change any of these later by editing: $CONF_FILE"
     echo ""
 
-    # Node number (required)
     while true; do
         read -rp "Enter your ASL3 node number: " NODE
         NODE=$(echo "$NODE" | tr -d ' ')
-        if [[ -n "$NODE" ]]; then
-            break
-        fi
+        [[ -n "$NODE" ]] && break
         echo -e "${RED}Node number is required.${NC}"
     done
 
-    # Permanent nodes
     read -rp "Enter permanent/hub node(s) to stay connected [leave blank if none]: " PERMANENT_NODES
-
-    # Reconnect nodes
     read -rp "Enter node(s) to reconnect to after reset [leave blank if none]: " RECONNECT_NODES
-
-    # Inactivity timeout
     read -rp "Inactivity timeout in seconds [default: 900 = 15 min]: " INACT_TIMEOUT
     INACT_TIMEOUT=${INACT_TIMEOUT:-900}
-
-    # Connection log
     read -rp "Path to connection log file [default: /var/log/asterisk/connectlog, blank to disable]: " CONNECT_LOG
     CONNECT_LOG=${CONNECT_LOG:-/var/log/asterisk/connectlog}
 
@@ -164,6 +168,7 @@ WARN_OFFSET_TTS=7
 #   https://github.com/N6LKA/asl3-connection-log
 # Leave blank to disable connection log monitoring.
 CONNECT_LOG="$CONNECT_LOG"
+
 # --- Permanent / Always-Connected Nodes ---
 # Space-separated list of nodes that are always connected.
 # Reset is skipped if ONLY these nodes are connected.
@@ -173,6 +178,7 @@ PERMANENT_NODES="$PERMANENT_NODES"
 # --- Blackout Window ---
 # During the blackout window, resets and warnings are suppressed entirely.
 # Uses 24-hour format (HH:MM). Leave both blank to disable.
+# Midnight-spanning windows are supported (e.g. 22:00 to 06:00).
 # Example: BLACKOUT_START="19:00" BLACKOUT_END="21:00"
 BLACKOUT_START=""
 BLACKOUT_END=""
@@ -214,7 +220,6 @@ systemctl restart lnkact-monitor
 sleep 2
 if systemctl is-active --quiet lnkact-monitor; then
     echo -e "${GREEN}Service is running successfully.${NC}"
-    # Clean up backup on success
     [[ -n "$BACKUP" && -f "$BACKUP" ]] && rm -f "$BACKUP"
 else
     echo -e "${RED}WARNING: Service did not start.${NC}"
@@ -246,17 +251,19 @@ else
     echo "  - Blackout windows"
     echo "  - Scheduled resets"
     echo "  - Warning mode (tts/file/none)"
-    echo "  - Minimum connection duration"
     echo "  - And more..."
 fi
 echo ""
 echo "Configuration file: $CONF_FILE"
-echo "Script file:        $SCRIPT_FILE"
+echo "Scripts directory:  $INSTALL_DIR"
 echo ""
 echo "Service commands:"
-echo "  systemctl start lnkact-monitor"
-echo "  systemctl stop lnkact-monitor"
-echo "  systemctl restart lnkact-monitor"
+echo "  systemctl start|stop|restart lnkact-monitor"
 echo "  journalctl -u lnkact-monitor -f"
+echo ""
+echo "Control commands:"
+echo "  lnkact enable"
+echo "  lnkact disable"
+echo "  lnkact status"
 echo "=============================================="
 echo ""

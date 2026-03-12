@@ -17,6 +17,7 @@ When your repeater node has been inactive (no local RF activity or new node conn
 - Scheduled blackout windows (suppress resets during nets, etc.)
 - Scheduled forced resets at configured times of day
 - Reconnect to multiple nodes after reset
+- Enable/disable monitor via `lnkact` command (for use by other scripts)
 - Daily reset counter logged
 - Asterisk availability check before each cycle
 - Connection log rotation detection
@@ -58,7 +59,7 @@ If you skip this, set `CONNECT_LOG=""` in the conf file. The monitor will still 
 
 ## Configuration
 
-All settings are in `/etc/asterisk/scripts/lnkact-monitor.conf`. After making changes, restart the service:
+All settings are in `/etc/asterisk/scripts/lnkact-monitor/lnkact-monitor.conf`. After making changes, restart the service:
 
 ```bash
 systemctl restart lnkact-monitor
@@ -109,6 +110,18 @@ SCHEDULED_RESETS="06:00 16:00"
 
 Scheduled resets always fire regardless of activity or connected nodes. The configured warning plays first.
 
+## Control Commands
+
+Other scripts (such as news or scheduler scripts) can enable or disable the monitor without stopping the service:
+
+```bash
+lnkact disable   # Suppress resets (e.g. while playing news)
+lnkact enable    # Resume normal operation
+lnkact status    # Show current status, uptime, resets today, etc.
+```
+
+The `lnkact` command is available system-wide after installation.
+
 ## Service Commands
 
 ```bash
@@ -123,9 +136,11 @@ journalctl -u lnkact-monitor -f
 
 | File | Location | Description |
 |---|---|---|
-| `lnkact-monitor.sh` | `/etc/asterisk/scripts/` | Main script (do not edit) |
-| `lnkact-monitor.conf` | `/etc/asterisk/scripts/` | User configuration |
+| `lnkact-monitor.sh` | `/etc/asterisk/scripts/lnkact-monitor/` | Main script (do not edit) |
+| `lnkact-monitor.conf` | `/etc/asterisk/scripts/lnkact-monitor/` | User configuration |
+| `lnkact.sh` | `/etc/asterisk/scripts/lnkact-monitor/` | Control script (do not edit) |
 | `lnkact-monitor.service` | `/etc/systemd/system/` | Systemd service definition |
+| `lnkact` | `/usr/local/bin/` | Symlink to lnkact.sh for system-wide access |
 
 ## How It Works
 

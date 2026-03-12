@@ -5,7 +5,7 @@ Requires=asterisk.service
 
 [Service]
 Type=simple
-ExecStart=/etc/asterisk/scripts/lnkact-monitor.sh
+ExecStart=/etc/asterisk/scripts/lnkact-monitor/lnkact-monitor.sh
 Restart=always
 RestartSec=10
 User=root
