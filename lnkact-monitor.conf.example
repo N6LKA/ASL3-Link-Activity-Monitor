@@ -2,7 +2,7 @@
 # lnkact-monitor.conf - Configuration for ASL3 Link Activity Monitor
 #
 # IMPORTANT: This is an example file. The actual configuration file is
-# created at /etc/asterisk/scripts/lnkact-monitor.conf by the installer.
+# created at /etc/asterisk/scripts/lnkact-monitor/lnkact-monitor.conf by the installer.
 #
 # After making changes to your conf file, restart the service:
 #   systemctl restart lnkact-monitor
@@ -49,10 +49,6 @@ WARN_OFFSET_TTS=7
 #   https://github.com/N6LKA/asl3-connection-log
 # Leave blank to disable connection log monitoring.
 CONNECT_LOG="/var/log/asterisk/connectlog"
-
-# Minimum connection duration in seconds before resetting timer.
-# Ignores very brief link tests or drive-bys.
-# Set to 0 to reset timer on any connection regardless of duration.
 
 # --- Permanent / Always-Connected Nodes ---
 # Space-separated list of nodes that are always connected.
