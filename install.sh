@@ -164,11 +164,6 @@ WARN_OFFSET_TTS=7
 #   https://github.com/N6LKA/asl3-connection-log
 # Leave blank to disable connection log monitoring.
 CONNECT_LOG="$CONNECT_LOG"
-
-# Minimum connection duration in seconds before resetting timer
-# Set to 0 to reset timer on any connection regardless of duration
-MIN_CONN_DURATION=60
-
 # --- Permanent / Always-Connected Nodes ---
 # Space-separated list of nodes that are always connected.
 # Reset is skipped if ONLY these nodes are connected.
