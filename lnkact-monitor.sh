@@ -53,7 +53,7 @@ log() {
 # automatically on next startup with these defaults.
 # =============================================================================
 DEFAULT_NODE=""
-DEFAULT_INACT_TIMEOUT=3600
+DEFAULT_INACT_TIMEOUT=900
 DEFAULT_POLL_INTERVAL=2
 DEFAULT_WARN_MODE="tts"
 DEFAULT_WARN_AUDIO="/etc/asterisk/local/30seconds-reset"
@@ -108,7 +108,7 @@ check_conf_vars() {
     }
 
     append_var "NODE"              "$DEFAULT_NODE"              "Node number to monitor"
-    append_var "INACT_TIMEOUT"     "$DEFAULT_INACT_TIMEOUT"     "Seconds of RF inactivity before reset (3600 = 60 min)"
+    append_var "INACT_TIMEOUT"     "$DEFAULT_INACT_TIMEOUT"     "Seconds of RF inactivity before reset (900 = 15 min)"
     append_var "POLL_INTERVAL"     "$DEFAULT_POLL_INTERVAL"     "How often to check activity in seconds"
     append_var "WARN_MODE"         "$DEFAULT_WARN_MODE"         "Warning mode: tts, file, or none"
     append_var "WARN_AUDIO"        "$DEFAULT_WARN_AUDIO"        "Path to pre-recorded warning file (no extension) - used if WARN_MODE=file"

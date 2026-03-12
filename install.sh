@@ -105,8 +105,8 @@ if [[ "$PRESERVE_CONF" == "false" ]]; then
     read -rp "Enter node(s) to reconnect to after reset [leave blank if none]: " RECONNECT_NODES
 
     # Inactivity timeout
-    read -rp "Inactivity timeout in seconds [default: 3600 = 60 min]: " INACT_TIMEOUT
-    INACT_TIMEOUT=${INACT_TIMEOUT:-3600}
+    read -rp "Inactivity timeout in seconds [default: 900 = 15 min]: " INACT_TIMEOUT
+    INACT_TIMEOUT=${INACT_TIMEOUT:-900}
 
     # Connection log
     read -rp "Path to connection log file [default: /var/log/asterisk/connectlog, blank to disable]: " CONNECT_LOG
@@ -134,7 +134,7 @@ if [[ "$PRESERVE_CONF" == "false" ]]; then
 NODE="$NODE"
 
 # --- Inactivity Timer ---
-# Seconds of RF inactivity before reset (3600 = 60 min)
+# Seconds of RF inactivity before reset (900 = 15 min)
 INACT_TIMEOUT=$INACT_TIMEOUT
 
 # How often to check activity in seconds

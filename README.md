@@ -69,7 +69,7 @@ systemctl restart lnkact-monitor
 | Variable | Default | Description |
 |---|---|---|
 | `NODE` | *(required)* | Your ASL3 node number |
-| `INACT_TIMEOUT` | `3600` | Seconds of inactivity before reset (3600 = 60 min) |
+| `INACT_TIMEOUT` | `900` | Seconds of inactivity before reset (900 = 15 min) |
 | `POLL_INTERVAL` | `2` | How often to check activity (seconds) |
 | `WARN_MODE` | `tts` | Warning mode: `tts`, `file`, or `none` |
 | `WARN_TTS_TEXT` | *see conf* | TTS text spoken as warning |
