@@ -433,7 +433,7 @@ while true; do
             if [[ "$MIN_CONN_DURATION" -gt 0 ]]; then
                 conn_time=$(echo "$new_conn" | grep -oP '\d{2}:\d{2}:\d{2} - \d{2}-\d{2}-\d{4}')
                 if [[ -n "$conn_time" ]]; then
-                    conn_epoch=$(date -d "$(echo "$conn_time" | sed 's/ - / /')" +%s 2>/dev/null)
+                    conn_epoch=$(date -d "$(echo "$conn_time" | sed 's/ - / /' | sed 's/\([0-9]\{2\}\)-\([0-9]\{2\}\)-\([0-9]\{4\}\)/\3-\1-\2/')" +%s 2>/dev/null)
                     if [[ -n "$conn_epoch" ]]; then
                         conn_age=$(( now - conn_epoch ))
                         if [[ "$conn_age" -lt "$MIN_CONN_DURATION" ]]; then
