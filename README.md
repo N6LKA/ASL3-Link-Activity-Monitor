@@ -150,10 +150,6 @@ The monitor polls every few seconds checking for two types of activity: local RF
 
 This monitor was originally written after the native `lnkactenable`/`lnkactmacro` timer stopped working on one particular ASL3 node — though the native function works fine on other nodes and setups, so your mileage may vary. What started as a workaround quickly grew into a more feature-rich replacement, adding blackout windows, scheduled resets, multi-node reconnect, and more. Even if your native timer is working, this monitor may be worth considering if you want more control over when and how resets happen.
 
-## Author
-
-Larry K. Aycock (N6LKA)
-
 ## License
 
 MIT License — Copyright 2026 Larry K. Aycock (N6LKA)
