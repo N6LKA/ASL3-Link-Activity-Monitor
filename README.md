@@ -156,4 +156,6 @@ Larry K. Aycock (N6LKA)
 
 ## License
 
-MIT License — free to use, modify, and share.
+MIT License — Copyright 2026 Larry K. Aycock (N6LKA)
+
+See [LICENSE](LICENSE) for details.
