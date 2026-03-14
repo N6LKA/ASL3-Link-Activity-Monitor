@@ -85,6 +85,25 @@ chmod +x "$CONTROL_FILE"
 ln -sf "$CONTROL_FILE" "$SYMLINK"
 echo "Control command available: lnkact enable|disable|status"
 
+# --- Download audio warning files ---
+echo "Downloading 30seconds-reset.ul..."
+curl -fsSL "$REPO/30seconds-reset.ul" -o "$INSTALL_DIR/30seconds-reset.ul"
+if [[ $? -ne 0 ]]; then
+    echo -e "${RED}ERROR: Failed to download 30seconds-reset.ul${NC}"
+    exit 1
+fi
+chown root:asterisk "$INSTALL_DIR/30seconds-reset.ul"
+chmod 644 "$INSTALL_DIR/30seconds-reset.ul"
+
+echo "Downloading 30seconds-reset.txt..."
+curl -fsSL "$REPO/30seconds-reset.txt" -o "$INSTALL_DIR/30seconds-reset.txt"
+if [[ $? -ne 0 ]]; then
+    echo -e "${RED}ERROR: Failed to download 30seconds-reset.txt${NC}"
+    exit 1
+fi
+chown root:asterisk "$INSTALL_DIR/30seconds-reset.txt"
+chmod 644 "$INSTALL_DIR/30seconds-reset.txt"
+
 # --- Download service file ---
 echo "Downloading lnkact-monitor.service..."
 curl -fsSL "$REPO/lnkact-monitor.service" -o "$SERVICE_FILE"
@@ -149,10 +168,10 @@ POLL_INTERVAL=2
 WARN_MODE="tts"
 
 # Path to pre-recorded warning file (no extension) - used if WARN_MODE=file
-WARN_AUDIO="/etc/asterisk/local/30seconds-reset"
+WARN_AUDIO="$INSTALL_DIR/30seconds-reset"
 
 # TTS warning text - used if WARN_MODE=tts
-WARN_TTS_TEXT="Warning! Node connections will reset in 30 seconds."
+WARN_TTS_TEXT="Inactivity Warning! Node connections will reset in 30 seconds."
 
 # Seconds before reset to play warning
 WARN_LEAD=30

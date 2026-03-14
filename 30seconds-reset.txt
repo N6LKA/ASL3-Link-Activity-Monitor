@@ -1,0 +1,1 @@
+Inactivity warning, node will reset in 30 seconds.
