@@ -34,7 +34,7 @@ When your repeater node has been inactive (no local RF activity or new node conn
 Run the following command as root or with sudo for both fresh installs and updates:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/N6LKA/asl3-link-activity-monitor/main/install.sh)
+bash <(curl -fsSL -H "Cache-Control: no-cache" https://raw.githubusercontent.com/N6LKA/asl3-link-activity-monitor/main/install.sh)
 ```
 
 **Fresh install:** The installer will prompt you for your node number and basic settings, create the configuration file, and start the service.
