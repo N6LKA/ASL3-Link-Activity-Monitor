@@ -1,5 +1,10 @@
 # ASL3 Link Activity Monitor
 
+![Release Version](https://img.shields.io/github/v/release/N6LKA/asl3-link-activity-monitor?label=Version&color=f15d24)
+![Release Date](https://img.shields.io/github/release-date/N6LKA/asl3-link-activity-monitor?label=Released&color=f15d24)
+![Hits](https://img.shields.io/endpoint?url=https%3A%2F%2Fhits.dwyl.com%2FN6LKA%2Fasl3-link-activity-monitor.json&label=Hits&color=f15d24)
+![GitHub Repo Size](https://img.shields.io/github/repo-size/N6LKA/asl3-link-activity-monitor?label=Size&color=f15d24)
+
 A systemd-based link activity monitor for ASL3 (AllStarLink 3) nodes with configurable inactivity timeouts, blackout windows, scheduled resets, and more.
 
 ## What It Does
