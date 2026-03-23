@@ -50,11 +50,17 @@ case "$cmd" in
         ;;
 
     status)
+        # ANSI color codes
+        GREEN=$'\e[0;32m'
+        YELLOW=$'\e[0;33m'
+        RED=$'\e[0;31m'
+        NC=$'\e[0m'
+
         # Check if service is running
         if ! systemctl is-active --quiet lnkact-monitor; then
             echo ""
             echo "  ASL3 Link Activity Monitor"
-            echo "  Status: STOPPED (service is not running)"
+            echo "  Status: ${RED}STOPPED (service is not running)${NC}"
             echo ""
             exit 0
         fi
@@ -63,7 +69,7 @@ case "$cmd" in
         if [[ ! -f "$STATE_FILE" ]]; then
             echo ""
             echo "  ASL3 Link Activity Monitor"
-            echo "  Status: Running (state file not yet available)"
+            echo "  Status: ${YELLOW}Running (state file not yet available)${NC}"
             echo ""
             exit 0
         fi
@@ -81,11 +87,11 @@ case "$cmd" in
 
         # Disabled status
         if [[ "$DISABLED" == "yes" ]]; then
-            status_str="DISABLED (resets suppressed)"
+            status_str="${RED}DISABLED (resets suppressed)${NC}"
         elif [[ "$IN_BLACKOUT" == "yes" ]]; then
-            status_str="Running (blackout window active - resets suppressed)"
+            status_str="${YELLOW}Running (blackout window active - resets suppressed)${NC}"
         else
-            status_str="Running"
+            status_str="${GREEN}Running${NC}"
         fi
 
         # Blackout info
