@@ -1,9 +1,9 @@
 # ASL3 Link Activity Monitor
 
-![Release Version](https://img.shields.io/github/v/release/N6LKA/asl3-link-activity-monitor?label=Version&color=f15d24)
-![Release Date](https://img.shields.io/github/release-date/N6LKA/asl3-link-activity-monitor?label=Released&color=f15d24)
-![Hits](https://img.shields.io/endpoint?url=https%3A%2F%2Fhits.dwyl.com%2FN6LKA%2Fasl3-link-activity-monitor.json&label=Hits&color=f15d24)
-![GitHub Repo Size](https://img.shields.io/github/repo-size/N6LKA/asl3-link-activity-monitor?label=Size&color=f15d24)
+![Release Version](https://img.shields.io/github/v/release/N6LKA/ASL3-Link-Activity-Monitor?label=Version&color=f15d24)
+![Release Date](https://img.shields.io/github/release-date/N6LKA/ASL3-Link-Activity-Monitor?label=Released&color=f15d24)
+![Hits](https://img.shields.io/endpoint?url=https%3A%2F%2Fhits.dwyl.com%2FN6LKA%2FASL3-Link-Activity-Monitor.json&label=Hits&color=f15d24)
+![GitHub Repo Size](https://img.shields.io/github/repo-size/N6LKA/ASL3-Link-Activity-Monitor?label=Size&color=f15d24)
 
 A systemd-based link activity monitor for ASL3 (AllStarLink 3) nodes with configurable inactivity timeouts, blackout windows, scheduled resets, and more.
 
@@ -32,14 +32,14 @@ When your repeater node has been inactive (no local RF activity or new node conn
 
 - ASL3 on Debian 12
 - `asl-tts` (included with ASL3) if using TTS warning mode
-- Connection logging (optional but recommended) — see [asl3-connection-log](https://github.com/N6LKA/asl3-connection-log)
+- Connection logging (optional but recommended) — see [ASL3-Connection-Log](https://github.com/N6LKA/ASL3-Connection-Log)
 
 ## Installation & Updates
 
 Run the following command as root or with sudo for both fresh installs and updates:
 
 ```bash
-bash <(curl -fsSL -H "Cache-Control: no-cache" https://raw.githubusercontent.com/N6LKA/asl3-link-activity-monitor/main/install.sh)
+bash <(curl -fsSL -H "Cache-Control: no-cache" https://raw.githubusercontent.com/N6LKA/ASL3-Link-Activity-Monitor/main/install.sh)
 ```
 
 **Fresh install:** The installer will prompt you for your node number and basic settings, create the configuration file, and start the service.
@@ -52,7 +52,7 @@ bash <(curl -fsSL -H "Cache-Control: no-cache" https://raw.githubusercontent.com
 
 ASL3 does not have a native connection log. To enable connection-based timer resets, install the companion logging scripts first:
 
-👉 [https://github.com/N6LKA/asl3-connection-log](https://github.com/N6LKA/asl3-connection-log)
+👉 [https://github.com/N6LKA/ASL3-Connection-Log](https://github.com/N6LKA/ASL3-Connection-Log)
 
 If you skip this, set `CONNECT_LOG=""` in the conf file. The monitor will still work using RF activity (kerchunk counter) only.
 
